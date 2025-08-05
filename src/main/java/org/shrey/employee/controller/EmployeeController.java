@@ -1,5 +1,6 @@
 package org.shrey.employee.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shrey.employee.exceptions.EmployeeNotFound;
 import org.shrey.employee.exceptions.ManagerException;
@@ -9,6 +10,8 @@ import org.shrey.employee.model.EmployeeDTO;
 import org.shrey.employee.service.EmployeeService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
@@ -19,31 +22,10 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/employee")
+@RequiredArgsConstructor
 public class EmployeeController {
 
     final EmployeeService employeeService;
-
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
-
-    @ExceptionHandler(EmployeeNotFound.class)
-    public ErrorResponse handleEmployeeNotFound(EmployeeNotFound e) {
-        log.error("Employee not found", e);
-        return ErrorResponse.create(e, HttpStatus.NOT_FOUND, e.getMessage());
-    }
-
-    @ExceptionHandler(ManagerException.class)
-    public ErrorResponse handleManagerException(ManagerException e) {
-        log.error("Manager cannot be same as employee", e);
-        return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, e.getMessage());
-    }
-
-    @ExceptionHandler(RecursiveManagerException.class)
-    public ErrorResponse handleRecursiveManagerException(RecursiveManagerException e) {
-        log.error("Manager cannot have recursive cycle", e);
-        return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, e.getMessage());
-    }
 
     @GetMapping("/{employeeId}")
     public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long employeeId) {
@@ -58,15 +40,18 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<EmployeeDTO>> getAllEmployees(Pageable pageable) {
+    public ResponseEntity<Page<EmployeeDTO>> getAllEmployees(
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
         log.info("getAllEmployees({})", pageable);
         return ResponseEntity.ok(employeeService.getEmployees(pageable));
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody CreateOrUpdateEmployeeDTO employeeDTO) {
+    public ResponseEntity<Void> createEmployee(@RequestBody CreateOrUpdateEmployeeDTO employeeDTO) {
         log.info("createEmployee({})", employeeDTO);
-        return ResponseEntity.ok(employeeService.createEmployee(employeeDTO));
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/{employeeId}")
@@ -79,6 +64,6 @@ public class EmployeeController {
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long employeeId) {
         log.info("deleteEmployee({})", employeeId);
         employeeService.deleteEmployee(employeeId);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

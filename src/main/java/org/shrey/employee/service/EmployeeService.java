@@ -1,6 +1,7 @@
 package org.shrey.employee.service;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shrey.employee.exceptions.EmployeeNotFound;
 import org.shrey.employee.exceptions.ManagerException;
@@ -20,13 +21,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
-
-    public EmployeeService(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
-    }
 
     private EmployeeDTO convertToDTO(Employee employee) {
         ManagerDTO managerDTO = null;
@@ -69,7 +67,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public EmployeeDTO createEmployee(CreateOrUpdateEmployeeDTO employeeDTO) throws ManagerException{
+    public EmployeeDTO createEmployee(CreateOrUpdateEmployeeDTO employeeDTO) throws ManagerException {
         Employee employee = new Employee();
         employee.setName(employeeDTO.getName());
         if (employeeDTO.getManagerId() != null) {

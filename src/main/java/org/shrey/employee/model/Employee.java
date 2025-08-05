@@ -5,12 +5,9 @@ import lombok.*;
 
 import java.util.Set;
 
+@Data
 @Entity
 @Table(name = "employees")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString(exclude = "manager")
 public class Employee {
 
